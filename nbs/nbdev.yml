@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "dlnb"
+  site-url: "https://Iamalos.github.io/dlnb"
+  description: "Deep Learning library with nbdev, following Dive Into Deep Learning book"
+  repo-branch: main
+  repo-url: "https://github.com/Iamalos/dlnb"
