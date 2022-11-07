@@ -2,13 +2,20 @@
 
 # %% ../nbs/00_core.ipynb 3
 from __future__ import annotations
+import matplotlib.pyplot as plt
+from typing import List, Tuple, Optional, Callable
 from torch import nn
+from fastcore.foundation import add_docs
 import inspect 
+from fastcore.basics import patch
+import collections
+from matplotlib_inline import backend_inline
+from IPython import display
 
 # %% auto 0
-__all__ = ['init_cnn', 'HyperParameters', 'Module']
+__all__ = ['init_cnn', 'HyperParameters', 'ProgressBoard', 'Module', 'Timer', 'Accumulator']
 
-# %% ../nbs/00_core.ipynb 4
+# %% ../nbs/00_core.ipynb 5
 def init_cnn(module # either nn.Linear or nn.Conv2d
             ):
     "Initialize weights for neural net layer with xavier uniform initializer."
@@ -16,7 +23,7 @@ def init_cnn(module # either nn.Linear or nn.Conv2d
     if type(module) == nn.Linear or type(module) == nn.Conv2d:
         nn.init.xavier_uniform_(module.weight)
 
-# %% ../nbs/00_core.ipynb 5
+# %% ../nbs/00_core.ipynb 8
 class HyperParameters:
     "Saves all non-ignored arguments in a class' __init__ method as attributes."
     
@@ -39,6 +46,267 @@ class HyperParameters:
             # set attributes of a class
             setattr(self, k, v)
 
-# %% ../nbs/00_core.ipynb 13
+# %% ../nbs/00_core.ipynb 16
+def use_svg_display():
+    "Use the svg format to display a plot in Jupyter."
+    backend_inline.set_matplotlib_formats('svg')
+
+# %% ../nbs/00_core.ipynb 18
+class ProgressBoard(HyperParameters):
+    "Plots data in animation."
+    
+    def __init__(
+        self,
+        xlabel: Optional[str] = None, # label for `x` axis
+        ylabel: Optional[str] = None, # label for `y` axis
+        xlim: Optional[float] = None, # `x` limit values
+        ylim: Optional[float] = None, # `y` limit values
+        xscale: str = 'linear', # x scale, defaults to 'linear.
+        yscale: str = 'linear', # y scale, defaults to 'linear.
+        ls = ['-', '--', '-.', ':'], # list of linestyles to be used.
+        colors = ['C0', 'C1', 'C2', 'C3'], # list of colors to be used.
+        fig: Optional[plt.Figure] = None, # figure
+        axes: Optional[plt.Axes] = None, # axes to be used for plotting. If this is not provided, creates new axes.
+        figsize: Tuple[float, float] = (3.5, 2.5), # size of the figure to be displayed.
+        display: bool = True # whether to show the plot.
+    ):
+
+        self.save_hyperparameters()
+        
+    
+    def _set_graph_params(self, lines, labels):
+        
+        axes = self.axes if self.axes else plt.gca()
+
+        # Set axis limits, labels and scale.
+
+        axes.set_xscale(self.xscale)
+        axes.set_yscale(self.yscale)
+
+        if self.xlim: axes.set_xlim(self.xlim)
+        if self.ylim: axes.set_ylim(self.ylim)
+
+        axes.set_xlabel(self.xlabel)
+        axes.set_ylabel(self.ylabel)
+        
+        axes.legend(lines, labels)
+
+    def draw(
+        self,
+        x, # x numeric values.
+        y, # y numeric values.
+        label: str, # label of a line to be plotted.
+        every_n: int = 1 # over what range to average the data. Defaults to one in which case every point is plotted.
+    ):
+       
+        "Interactively plot `x` and `y`."
+
+        # Store pairs of x and y in a named tuple for ease of use.
+        Point = collections.namedtuple('Point', ['x', 'y'])
+
+        # Initialize `_raw_points` and `data` ordered dicts.
+        if not hasattr(self, 'data'):
+            self._raw_points = collections.OrderedDict()
+            self.data = collections.OrderedDict()
+        if label not in self.data:
+            self._raw_points[label] = []
+            self.data[label] = []
+
+        # Copy `_raw_points` and `data` for a label to temporary arrays.
+        # When points and line changes, `self._raw_points`` and `self.data`
+        # changes as well.
+        points = self._raw_points[label]
+        line = self.data[label]
+        points.append(Point(x, y))
+
+        # Accumulate points in `points` array until
+        # there are `every_n` items.
+        if len(points) != every_n:
+            return
+
+        def mean(x): return sum(x) / len(x)
+
+        # Add to line array averaged x and y points to plot.
+        line.append(Point(mean([p.x for p in points]),
+                          mean([p.y for p in points])))
+
+        # clear points array after reaching `every_n` items.
+        points.clear()
+
+        if not self.display:
+            return
+
+        use_svg_display()
+
+        # Prepare for the first plotting.
+        if self.fig is None:
+            self.fig = plt.figure(figsize=self.figsize)
+        plt_lines, labels = [], []
+
+        for (k, v), ls, color, in zip(self.data.items(), self.ls, self.colors):
+            # store in array to later call `axes.legend`
+            plt_lines.append(plt.plot(
+                [p.x for p in v],
+                [p.y for p in v],
+                linestyle=ls,
+                color=color)[0]
+            )
+            labels.append(k)
+
+        
+        self._set_graph_params(plt_lines, labels)
+
+        display.display(self.fig)
+        # To plot on the same graph
+        display.clear_output(wait=True)
+
+# %% ../nbs/00_core.ipynb 21
 class Module(nn.Module, HyperParameters):
     "The base class for all the models in the Diving into DL course"
+
+    def __init__(
+        self: Module,
+        plot_train_per_epoch: int = 2, # number of training plot updates per one epoch.
+        plot_valid_per_epoch: int = 1 # number of validation plot updates per one epoch.
+    ):
+        super().__init__()
+        self.save_hyperparameters()
+        #self.board = ProgressBoard() # ProgressBoard for plotting data.
+
+
+    def loss(self: Module, 
+             y_hat, # predicted y values
+             y): # real y values
+        raise NotImplementedError
+
+    def forward(self: Module, 
+                X # input tensor
+               ):
+        # make sure class has `net` attribute
+        assert hasattr(self, 'net'), 'Neural network is not defined.'
+        return self.net(X)  
+
+    def plot(self: Module,
+             key: str, # name of the metric to plot (e.g. `loss`, `accuracy`)
+             value, # value to plot
+             train: bool # train or validation
+            ):
+
+        assert hasattr(self, 'trainer'), 'Trainer is not inited.'
+        self.board.xlabel = 'epoch'
+        if train:
+            # train_batch_idx is calculated as epoch * num_train_batches,
+            # so to convert it to epochs, divide by num_train_batches.
+            # x is an epoch (x-axis for plot)
+            x = self.trainer.train_batch_idx / \
+                self.trainer.num_train_batches
+            # frequency of updates within one epoch. E.g. if 4 batches per
+            # one epoch and `plot_train_per_epoch` is 2, then we need to
+            # update the graph every 2 batches.
+            n = self.trainer.num_train_batches / \
+                self.plot_train_per_epoch
+        else:
+            x = self.trainer.epoch + 1
+            n = self.trainer.num_val_batches / \
+                self.plot_valid_per_epoch
+
+        self.board.draw(x,
+                        numpy(to(value, cpu())),
+                        ('train_' if train else 'val_') + key,
+                        every_n=int(n))
+
+    def training_step(self: Module,
+                      batch # list of X and Y sampled values.
+                     ):
+            
+            # batch consists of [X, Y]
+            # so *batch[:-1] takes X values and
+            # batch[-1] takes Y values
+            loss = self.loss(self(*batch[:-1]), batch[-1])
+            self.plot('loss', loss, train=True)
+            return loss
+
+    def validation_step(self: Module,
+                        batch # List of X and Y sampled values.
+                       ):
+        loss = self.loss(self(*batch[:-1]), batch[-1])
+        self.plot('loss', loss, train=False)
+
+    def apply_init(self: Module,
+                   inputs, # Input tensor required to initialize lazy layers
+                   init: Callable = None # Initialization function for each layer
+                  ):
+       
+        self.forward(*inputs)
+        if init is not None:
+            self.net.apply(init)
+
+    def configure_optimizers(self: Module):
+        
+        raise NotImplementedError
+
+# %% ../nbs/00_core.ipynb 22
+add_docs(Module,
+         loss = "Calculate loss between fitted values and observed values.",
+         forward = "Make a forward pass on the data.",
+         plot = "Plots training or validation metric.",
+         training_step = "Calculate loss for training batch and call `plot` method.",
+         validation_step = "Calculate loss for validation data and call `plot` method.",
+         apply_init =  "Apply `init` function to each layer of a net.",
+         configure_optimizers = "Configure optimizers for training the `model`."
+        )
+
+# %% ../nbs/00_core.ipynb 27
+class Timer:
+    "Record multiple running times."
+
+    def __init__(self):
+        "Inits Timer with empty array of `times` and starts it."
+        self.times = []
+        self.start()
+
+    def start(self) -> None:
+        self.tik = time.time()
+
+    def stop(self) -> None:
+        self.times.append(time.time()-self.tik)
+        return self.times[-1]
+
+    def avg(self) -> float:
+        return sum(self.times) / len(self.times)
+
+    def cumsum(self) -> List[float]:
+        # casts list to numpy array to use `cumsum` f-n
+        # then casts back to python list
+        return np.array(self.times).cumsum().tolist()
+
+# %% ../nbs/00_core.ipynb 28
+add_docs(Timer,
+         start = "Start the timer",
+         stop = "Stop the timer and record the time in a list",
+         avg = "Return the average time",
+         cumsum = "Return the accumulated time"
+        )
+
+# %% ../nbs/00_core.ipynb 31
+class Accumulator:
+    "Accumulates sums over `n` variables."
+
+    def __init__(self, n: int # length of an array
+                ):
+        "Inititalize with zeros an array of size `n`"
+
+        self.data = [0.0] * n
+
+    def add(self, *args):
+        "Add new values to each corresponding position in the array."
+
+        self.data = [a + float(b) for a, b in zip(self.data, args)]
+
+    def reset(self):
+        """Set all data entries of data to zero"""
+        self.data = [0.0] * len(self.data)
+
+    def __getitem__(self, idx: int):
+        """Getter - simply return an element by index from self.data."""
+        return self.data[idx]
