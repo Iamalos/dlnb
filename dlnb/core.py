@@ -11,9 +11,11 @@ from fastcore.basics import patch
 import collections
 from matplotlib_inline import backend_inline
 from IPython import display
+import time
 
 # %% auto 0
-__all__ = ['init_cnn', 'HyperParameters', 'ProgressBoard', 'Module', 'Timer', 'Accumulator']
+__all__ = ['init_cnn', 'HyperParameters', 'add_to_class', 'cpu', 'gpu', 'get_num_gpus', 'try_gpu', 'ProgressBoard', 'Module',
+           'DataModule', 'Trainer', 'Timer', 'Accumulator']
 
 # %% ../nbs/00_core.ipynb 5
 def init_cnn(module # either nn.Linear or nn.Conv2d
@@ -25,7 +27,7 @@ def init_cnn(module # either nn.Linear or nn.Conv2d
 
 # %% ../nbs/00_core.ipynb 8
 class HyperParameters:
-    "Saves all non-ignored arguments in a class' __init__ method as attributes."
+    "Inherit from this class to save all non-ignored arguments in a class `__init__` method as attributes."
     
     def save_hyperparameters(self, 
                              ignore = [] #  list of argument names (string) to ignore when calling `setattr`
@@ -46,12 +48,39 @@ class HyperParameters:
             # set attributes of a class
             setattr(self, k, v)
 
-# %% ../nbs/00_core.ipynb 16
+# %% ../nbs/00_core.ipynb 15
+def add_to_class(Class):
+    """Adds a method to a class."""
+    def wrapper(obj):
+        setattr(Class, obj.__name__, obj)
+    return wrapper
+
+# %% ../nbs/00_core.ipynb 19
+def cpu():
+    return torch.device('cpu')
+
+
+def gpu(i: int = 0):
+    return torch.device(f'cuda:{i}')
+
+
+def get_num_gpus():
+    "Return number of gpus."
+    return torch.cuda.device_count()
+
+
+def try_gpu(i: int = 0):
+    "Return gpu(i) if exists, otherwise return cpu()."
+    if get_num_gpus() >= i + 1:
+        return gpu(i)
+    return cpu()
+
+# %% ../nbs/00_core.ipynb 21
 def use_svg_display():
     "Use the svg format to display a plot in Jupyter."
     backend_inline.set_matplotlib_formats('svg')
 
-# %% ../nbs/00_core.ipynb 18
+# %% ../nbs/00_core.ipynb 22
 class ProgressBoard(HyperParameters):
     "Plots data in animation."
     
@@ -61,14 +90,14 @@ class ProgressBoard(HyperParameters):
         ylabel: Optional[str] = None, # label for `y` axis
         xlim: Optional[float] = None, # `x` limit values
         ylim: Optional[float] = None, # `y` limit values
-        xscale: str = 'linear', # x scale, defaults to 'linear.
-        yscale: str = 'linear', # y scale, defaults to 'linear.
-        ls = ['-', '--', '-.', ':'], # list of linestyles to be used.
-        colors = ['C0', 'C1', 'C2', 'C3'], # list of colors to be used.
+        xscale: str = 'linear', # x scale, defaults to 'linear
+        yscale: str = 'linear', # y scale, defaults to 'linear
+        ls = ['-', '--', '-.', ':'], # list of linestyles to be used
+        colors = ['C0', 'C1', 'C2', 'C3'], # list of colors to be used
         fig: Optional[plt.Figure] = None, # figure
-        axes: Optional[plt.Axes] = None, # axes to be used for plotting. If this is not provided, creates new axes.
-        figsize: Tuple[float, float] = (3.5, 2.5), # size of the figure to be displayed.
-        display: bool = True # whether to show the plot.
+        axes: Optional[plt.Axes] = None, # axes to be used for plotting. If this is not provided, creates new axes
+        figsize: Tuple[float, float] = (3.5, 2.5), # size of the figure to be displayed
+        display: bool = True # whether to show the plot
     ):
 
         self.save_hyperparameters()
@@ -93,10 +122,10 @@ class ProgressBoard(HyperParameters):
 
     def draw(
         self,
-        x, # x numeric values.
-        y, # y numeric values.
-        label: str, # label of a line to be plotted.
-        every_n: int = 1 # over what range to average the data. Defaults to one in which case every point is plotted.
+        x, # x numeric values
+        y, # y numeric values
+        label: str, # label of a line to be plotted
+        every_n: int = 1 # over what range to average the data. Defaults to one in which case every point is plotted
     ):
        
         "Interactively plot `x` and `y`."
@@ -153,25 +182,24 @@ class ProgressBoard(HyperParameters):
             )
             labels.append(k)
 
-        
         self._set_graph_params(plt_lines, labels)
 
         display.display(self.fig)
         # To plot on the same graph
         display.clear_output(wait=True)
 
-# %% ../nbs/00_core.ipynb 21
+# %% ../nbs/00_core.ipynb 25
 class Module(nn.Module, HyperParameters):
     "The base class for all the models in the Diving into DL course"
 
     def __init__(
         self: Module,
-        plot_train_per_epoch: int = 2, # number of training plot updates per one epoch.
-        plot_valid_per_epoch: int = 1 # number of validation plot updates per one epoch.
+        plot_train_per_epoch: int = 2, # number of training plot updates per one epoch
+        plot_valid_per_epoch: int = 1 # number of validation plot updates per one epoch
     ):
         super().__init__()
         self.save_hyperparameters()
-        #self.board = ProgressBoard() # ProgressBoard for plotting data.
+        self.board = ProgressBoard() # ProgressBoard for plotting data
 
 
     def loss(self: Module, 
@@ -245,7 +273,7 @@ class Module(nn.Module, HyperParameters):
         
         raise NotImplementedError
 
-# %% ../nbs/00_core.ipynb 22
+# %% ../nbs/00_core.ipynb 26
 add_docs(Module,
          loss = "Calculate loss between fitted values and observed values.",
          forward = "Make a forward pass on the data.",
@@ -256,7 +284,110 @@ add_docs(Module,
          configure_optimizers = "Configure optimizers for training the `model`."
         )
 
-# %% ../nbs/00_core.ipynb 27
+# %% ../nbs/00_core.ipynb 29
+class DataModule(HyperParameters):
+    "The base class for the data."
+    
+    def __init__(self, root: str = '../data', num_workers: int = 4):
+        self.save_hyperparameters()
+
+    def get_tensorloader(
+        self,
+        tensors: List[torch.Tensor], # list of tensors (e.g. Xs and ys).
+        train: bool, # rue if DataLoader for training.
+        indices: slice = slice(0, None) # slice to be used on tensors to create a DataLoader. None means to the end
+    ) -> torch.utils.data.DataLoader:
+  
+        # for each tensor in tensors select a slice given by indices
+        tensors = [tensor[indices] for tensor in tensors]
+        dataset = torch.utils.data.TensorDataset(*tensors)
+        return torch.utils.data.DataLoader(
+            dataset,
+            batch_size=self.batch_size,
+            shuffle=train)
+
+    def get_dataloader(self, train: bool):
+        return NotImplementedError
+
+    def train_dataloader(self):
+        return self.get_dataloader(train=True)
+
+    def val_dataloader(self):
+        return self.get_dataloader(train=False)
+
+# %% ../nbs/00_core.ipynb 32
+class Trainer(HyperParameters):
+    "Base class used to train learnable parameters."
+
+    def __init__(
+        self,
+        max_epochs: int, # number of epochs to run train.
+        num_gpus: int = 0, # number of gpus to use when on gpu
+        gradient_clip_value = 0
+    ):
+        self.save_hyperparameters()
+        self.gpus = [gpu(i) for i in range(min(num_gpus, get_num_gpus()))]
+
+    def prepare_data(self, data: DataModule):
+        self.train_dataloader = data.train_dataloader()
+        self.val_dataloader = data.val_dataloader()
+        self.num_train_batches = len(self.train_dataloader)
+        self.num_val_batches = (len(self.val_dataloader)
+                                if self.val_dataloader is not None else 0)
+
+    def prepare_model(self, model: Module):
+        model.trainer = self
+        model.board.xlim = [0, self.max_epochs]
+        if self.gpus:
+            model.to(self.gpus[0])
+        self.model = model
+
+    def fit(self, model: Module, data: DataModule):
+
+        self.prepare_data(data)
+        self.prepare_model(model)
+        self.optim = model.configure_optimizers()
+        
+        self.epoch = 0
+        self.train_batch_idx = 0
+        self.val_batch_idx = 0
+        # why self.epoch?
+        for self.epoch in range(self.max_epochs):
+            self.fit_epoch()
+
+    def prepare_batch(self, batch: List[Tensor] # sample of data yielded by DataLoader.
+                     ):
+        
+        if self.gpus:
+            batch = [a.to(self.gpus[0]) for a in batch]
+        return batch
+
+    def fit_epoch(self):
+        
+        # from nn.Module - sets the model in a training mode
+        self.model.train()
+        
+        for batch in self.train_dataloader:
+            loss = self.model.training_step(self.prepare_batch(batch))
+            self.optim.zero_grad()
+            with torch.no_grad():
+                loss.backward()
+                if self.gradient_clip_value > 0:
+                    print("NOT IMPLEMENTED YET")
+                    self.clip_gradients(self.gradient_clip_value, self.model)
+                self.optim.step()
+            self.train_batch_idx += 1
+            
+        if self.val_dataloader is None:
+            return
+        # from nn.Module - sets the model in a training mode
+        self.model.eval()
+        for batch in self.val_dataloader:
+            with torch.no_grad():
+                self.model.validation_step(self.prepare_batch(batch))
+            self.val_batch_idx += 1
+
+# %% ../nbs/00_core.ipynb 35
 class Timer:
     "Record multiple running times."
 
@@ -280,7 +411,7 @@ class Timer:
         # then casts back to python list
         return np.array(self.times).cumsum().tolist()
 
-# %% ../nbs/00_core.ipynb 28
+# %% ../nbs/00_core.ipynb 36
 add_docs(Timer,
          start = "Start the timer",
          stop = "Stop the timer and record the time in a list",
@@ -288,7 +419,7 @@ add_docs(Timer,
          cumsum = "Return the accumulated time"
         )
 
-# %% ../nbs/00_core.ipynb 31
+# %% ../nbs/00_core.ipynb 39
 class Accumulator:
     "Accumulates sums over `n` variables."
 

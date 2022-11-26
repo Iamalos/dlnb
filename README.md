@@ -17,7 +17,9 @@ pip install dlnb
 Fill me in please! Don’t forget code examples:
 
 ``` python
-1+1
+timer = Timer()
 ```
 
-    2
+``` python
+timer.start()
+```
