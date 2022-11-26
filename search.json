@@ -1,0 +1,51 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "dlnb",
+    "section": "",
+    "text": "This file will become your README and also the index of your documentation."
+  },
+  {
+    "objectID": "index.html#install",
+    "href": "index.html#install",
+    "title": "dlnb",
+    "section": "Install",
+    "text": "Install\npip install dlnb"
+  },
+  {
+    "objectID": "index.html#how-to-use",
+    "href": "index.html#how-to-use",
+    "title": "dlnb",
+    "section": "How to use",
+    "text": "How to use\nFill me in please! Don’t forget code examples:\n\ntimer = Timer()\n\n\ntimer.start()"
+  },
+  {
+    "objectID": "core.html",
+    "href": "core.html",
+    "title": "core",
+    "section": "",
+    "text": "source\n\n\n\n init_cnn (module)\n\nInitialize weights for neural net layer with xavier uniform initializer.\n\n\n\n\nDetails\n\n\n\n\nmodule\neither nn.Linear or nn.Conv2d\n\n\n\n\nmodel = nn.Linear(2, 3)\nnn.init.ones_(model.weight)\n\nParameter containing:\ntensor([[1., 1.],\n        [1., 1.],\n        [1., 1.]], requires_grad=True)\n\n\n\ninit_cnn(model)\nmodel.weight\n\nParameter containing:\ntensor([[-0.9805,  0.6248],\n        [ 0.7421,  0.3259],\n        [ 0.1148, -0.7342]], requires_grad=True)\n\n\n\nsource\n\n\n\n\n HyperParameters ()\n\nInherit from this class to save all non-ignored arguments in a class __init__ method as attributes.\n\nsource\n\n\n\n\n HyperParameters.save_hyperparameters (ignore=[])\n\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nignore\nlist\n[]\nlist of argument names (string) to ignore when calling setattr\n\n\n\nAfter inheriting from HyperParameters you can save all arguments in a class __init__ method as class attributes.\n\nclass Person(HyperParameters):\n    def __init__(self, name, age, sex, _internal='secret'):\n        self.save_hyperparameters(ignore=['sex'])\n        \njack = Person(\"Billy\", 25, 'male')\n\n\ntest_eq(jack.name, \"Billy\")\n\nIgnores self, any variables in ignore list and that starts with the underscore.\n\ntest_fail(lambda: jack.sex, contains=\"'Person' object has no attribute 'sex'\")\ntest_fail(lambda: jack._internal, contains=\"'Person' object has no attribute '_internal'\")\n\n\nsource\n\n\n\n\n add_to_class (Class)\n\nAdds a method to a class.\nFor interactive development and ‘monkey patching’.\n\nclass Car:\n    pass\n\n@add_to_class(Car)\ndef start(self):\n    return 'Car started'\n\n\ncar = Car()\ntest_eq(car.start(), 'Car started')\n\n\nsource\n\n\n\n\n try_gpu (i:int=0)\n\nReturn gpu(i) if exists, otherwise return cpu().\n\nsource\n\n\n\n\n get_num_gpus ()\n\nReturn number of gpus.\n\nsource\n\n\n\n\n gpu (i:int=0)\n\n\nsource\n\n\n\n\n cpu ()"
+  },
+  {
+    "objectID": "core.html#plotting",
+    "href": "core.html#plotting",
+    "title": "core",
+    "section": "Plotting",
+    "text": "Plotting\n\nsource\n\nProgressBoard\n\n ProgressBoard (xlabel:Optional[str]=None, ylabel:Optional[str]=None,\n                xlim:Optional[float]=None, ylim:Optional[float]=None,\n                xscale:str='linear', yscale:str='linear', ls=['-', '--',\n                '-.', ':'], colors=['C0', 'C1', 'C2', 'C3'],\n                fig:Optional[plt.Figure]=None,\n                axes:Optional[plt.Axes]=None,\n                figsize:Tuple[float,float]=(3.5, 2.5), display:bool=True)\n\nPlots data in animation.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nxlabel\nOptional[str]\nNone\nlabel for x axis\n\n\nylabel\nOptional[str]\nNone\nlabel for y axis\n\n\nxlim\nOptional[float]\nNone\nx limit values\n\n\nylim\nOptional[float]\nNone\ny limit values\n\n\nxscale\nstr\nlinear\nx scale, defaults to ’linear\n\n\nyscale\nstr\nlinear\ny scale, defaults to ’linear\n\n\nls\nlist\n[‘-’, ‘–’, ‘-.’, ‘:’]\nlist of linestyles to be used\n\n\ncolors\nlist\n[‘C0’, ‘C1’, ‘C2’, ‘C3’]\nlist of colors to be used\n\n\nfig\nOptional[plt.Figure]\nNone\nfigure\n\n\naxes\nOptional[plt.Axes]\nNone\naxes to be used for plotting. If this is not provided, creates new axes\n\n\nfigsize\nTuple[float, float]\n(3.5, 2.5)\nsize of the figure to be displayed\n\n\ndisplay\nbool\nTrue\nwhether to show the plot\n\n\n\n\na = ProgressBoard(xlabel = 'x values', ylabel = 'y values')\ny = lambda x: x**2\nfor x in range(-10, 10):\n    a.draw(x, y(x), '$x^2$')"
+  },
+  {
+    "objectID": "core.html#building-modules",
+    "href": "core.html#building-modules",
+    "title": "core",
+    "section": "Building Modules",
+    "text": "Building Modules\n\nsource\n\nModule\n\n Module (plot_train_per_epoch:int=2, plot_valid_per_epoch:int=1)\n\nThe base class for all the models in the Diving into DL course\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nplot_train_per_epoch\nint\n2\nnumber of training plot updates per one epoch\n\n\nplot_valid_per_epoch\nint\n1\nnumber of validation plot updates per one epoch\n\n\n\nBasis building block for custom models in the course that includes the basic pipeline of training a neural net: training step function\n\nsource\n\n\nDataModule\n\n DataModule (root:str='../data', num_workers:int=4)\n\nThe base class for the data.\nThe base class for the data. A data loader is a generator that yields a batch of data every time it is called. The batch is then fed into the training_step method of Module to compute loss.\n\nsource\n\n\nTrainer\n\n Trainer (max_epochs:int, num_gpus:int=0, gradient_clip_value=0)\n\nBase class used to train learnable parameters.\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nmax_epochs\nint\n\nnumber of epochs to run train.\n\n\nnum_gpus\nint\n0\nnumber of gpus to use when on gpu\n\n\ngradient_clip_value\nint\n0"
+  },
+  {
+    "objectID": "core.html#timer",
+    "href": "core.html#timer",
+    "title": "core",
+    "section": "Timer",
+    "text": "Timer\n\nsource\n\nTimer\n\n Timer ()\n\nRecord multiple running times.\nTimer.start to start the timer and Timer.stop to end it. Timer.avg calculates the average running time\n\ntimer = Timer()\ntimer.start()\ntime.sleep(0.5)\n\ntimer.stop()\ntimer.start()\n\ntime.sleep(1)\ntimer.stop()\n\ntest_close(timer.avg(), (0.5+1)/2, eps=1e-2)\n\n\nsource\n\n\nAccumulator\n\n Accumulator (n:int)\n\nAccumulates sums over n variables.\n\n\n\n\nType\nDetails\n\n\n\n\nn\nint\nlength of an array\n\n\n\nAccumulates statistics over an array of lengths n. Each entry in an array represents characteristic over which new items to repsective array positions will be summed over.\n\na = Accumulator(3)\na.add(1,2,3)\ntest_eq(a.data, [1.0, 2.0, 3.0])\n\na.add(1,1,1)\ntest_eq(a.data, [2.0, 3.0, 4.0])\n\na.reset()\ntest_eq(a.data, [0.0, 0.0, 0.0])"
+  }
+]

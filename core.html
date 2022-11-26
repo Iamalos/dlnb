@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.269">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Basic functions and classes used in the library">
+
+<title>dlnb - core</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="dlnb - core">
+<meta property="og:description" content="Basic functions and classes used in the library">
+<meta property="og:site-name" content="dlnb">
+<meta name="twitter:title" content="dlnb - core">
+<meta name="twitter:description" content="Basic functions and classes used in the library">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">dlnb</span>
+    </a>
+  </div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">core</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">dlnb</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./core.html" class="sidebar-item-text sidebar-link active">core</a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#utilities" id="toc-utilities" class="nav-link active" data-scroll-target="#utilities">Utilities</a>
+  <ul class="collapse">
+  <li><a href="#init_cnn" id="toc-init_cnn" class="nav-link" data-scroll-target="#init_cnn">init_cnn</a></li>
+  <li><a href="#hyperparameters" id="toc-hyperparameters" class="nav-link" data-scroll-target="#hyperparameters">HyperParameters</a></li>
+  <li><a href="#hyperparameters.save_hyperparameters" id="toc-hyperparameters.save_hyperparameters" class="nav-link" data-scroll-target="#hyperparameters.save_hyperparameters">HyperParameters.save_hyperparameters</a></li>
+  <li><a href="#add_to_class" id="toc-add_to_class" class="nav-link" data-scroll-target="#add_to_class">add_to_class</a></li>
+  <li><a href="#try_gpu" id="toc-try_gpu" class="nav-link" data-scroll-target="#try_gpu">try_gpu</a></li>
+  <li><a href="#get_num_gpus" id="toc-get_num_gpus" class="nav-link" data-scroll-target="#get_num_gpus">get_num_gpus</a></li>
+  <li><a href="#gpu" id="toc-gpu" class="nav-link" data-scroll-target="#gpu">gpu</a></li>
+  <li><a href="#cpu" id="toc-cpu" class="nav-link" data-scroll-target="#cpu">cpu</a></li>
+  </ul></li>
+  <li><a href="#plotting" id="toc-plotting" class="nav-link" data-scroll-target="#plotting">Plotting</a>
+  <ul class="collapse">
+  <li><a href="#progressboard" id="toc-progressboard" class="nav-link" data-scroll-target="#progressboard">ProgressBoard</a></li>
+  </ul></li>
+  <li><a href="#building-modules" id="toc-building-modules" class="nav-link" data-scroll-target="#building-modules">Building Modules</a>
+  <ul class="collapse">
+  <li><a href="#module" id="toc-module" class="nav-link" data-scroll-target="#module">Module</a></li>
+  <li><a href="#datamodule" id="toc-datamodule" class="nav-link" data-scroll-target="#datamodule">DataModule</a></li>
+  <li><a href="#trainer" id="toc-trainer" class="nav-link" data-scroll-target="#trainer">Trainer</a></li>
+  </ul></li>
+  <li><a href="#timer" id="toc-timer" class="nav-link" data-scroll-target="#timer">Timer</a>
+  <ul class="collapse">
+  <li><a href="#timer-1" id="toc-timer-1" class="nav-link" data-scroll-target="#timer-1">Timer</a></li>
+  <li><a href="#accumulator" id="toc-accumulator" class="nav-link" data-scroll-target="#accumulator">Accumulator</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/Iamalos/dlnb/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">core</h1>
+</div>
+
+<div>
+  <div class="description">
+    Basic functions and classes used in the library
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<section id="utilities" class="level2">
+<h2 class="anchored" data-anchor-id="utilities">Utilities</h2>
+<hr>
+<p><a href="https://github.com/Iamalos/dlnb/blob/main/dlnb/core.py#L21" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="init_cnn" class="level3">
+<h3 class="anchored" data-anchor-id="init_cnn">init_cnn</h3>
+<blockquote class="blockquote">
+<pre><code> init_cnn (module)</code></pre>
+</blockquote>
+<p>Initialize weights for neural net layer with xavier uniform initializer.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>module</td>
+<td>either nn.Linear or nn.Conv2d</td>
+</tr>
+</tbody>
+</table>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> nn.Linear(<span class="dv">2</span>, <span class="dv">3</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>nn.init.ones_(model.weight)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>Parameter containing:
+tensor([[1., 1.],
+        [1., 1.],
+        [1., 1.]], requires_grad=True)</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>init_cnn(model)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>model.weight</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>Parameter containing:
+tensor([[-0.9805,  0.6248],
+        [ 0.7421,  0.3259],
+        [ 0.1148, -0.7342]], requires_grad=True)</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/Iamalos/dlnb/blob/main/dlnb/core.py#L29" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="hyperparameters" class="level3">
+<h3 class="anchored" data-anchor-id="hyperparameters">HyperParameters</h3>
+<blockquote class="blockquote">
+<pre><code> HyperParameters ()</code></pre>
+</blockquote>
+<p>Inherit from this class to save all non-ignored arguments in a class <code>__init__</code> method as attributes.</p>
+<hr>
+<p><a href="https://github.com/Iamalos/dlnb/blob/main/dlnb/core.py#L32" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="hyperparameters.save_hyperparameters" class="level3">
+<h3 class="anchored" data-anchor-id="hyperparameters.save_hyperparameters">HyperParameters.save_hyperparameters</h3>
+<blockquote class="blockquote">
+<pre><code> HyperParameters.save_hyperparameters (ignore=[])</code></pre>
+</blockquote>
+<table class="table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ignore</td>
+<td>list</td>
+<td>[]</td>
+<td>list of argument names (string) to ignore when calling <code>setattr</code></td>
+</tr>
+</tbody>
+</table>
+<p>After inheriting from <a href="https://Iamalos.github.io/dlnb/core.html#hyperparameters"><code>HyperParameters</code></a> you can save all arguments in a class <code>__init__</code> method as class attributes.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Person(HyperParameters):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, name, age, sex, _internal<span class="op">=</span><span class="st">'secret'</span>):</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.save_hyperparameters(ignore<span class="op">=</span>[<span class="st">'sex'</span>])</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>jack <span class="op">=</span> Person(<span class="st">"Billy"</span>, <span class="dv">25</span>, <span class="st">'male'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>test_eq(jack.name, <span class="st">"Billy"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Ignores <code>self</code>, any variables in <code>ignore</code> list and that starts with the underscore.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>test_fail(<span class="kw">lambda</span>: jack.sex, contains<span class="op">=</span><span class="st">"'Person' object has no attribute 'sex'"</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>test_fail(<span class="kw">lambda</span>: jack._internal, contains<span class="op">=</span><span class="st">"'Person' object has no attribute '_internal'"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/Iamalos/dlnb/blob/main/dlnb/core.py#L52" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="add_to_class" class="level3">
+<h3 class="anchored" data-anchor-id="add_to_class">add_to_class</h3>
+<blockquote class="blockquote">
+<pre><code> add_to_class (Class)</code></pre>
+</blockquote>
+<p>Adds a method to a class.</p>
+<p>For interactive development and ‘monkey patching’.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Car:</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">pass</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="at">@add_to_class</span>(Car)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> start(<span class="va">self</span>):</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="st">'Car started'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>car <span class="op">=</span> Car()</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>test_eq(car.start(), <span class="st">'Car started'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/Iamalos/dlnb/blob/main/dlnb/core.py#L72" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="try_gpu" class="level3">
+<h3 class="anchored" data-anchor-id="try_gpu">try_gpu</h3>
+<blockquote class="blockquote">
+<pre><code> try_gpu (i:int=0)</code></pre>
+</blockquote>
+<p>Return gpu(i) if exists, otherwise return cpu().</p>
+<hr>
+<p><a href="https://github.com/Iamalos/dlnb/blob/main/dlnb/core.py#L67" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="get_num_gpus" class="level3">
+<h3 class="anchored" data-anchor-id="get_num_gpus">get_num_gpus</h3>
+<blockquote class="blockquote">
+<pre><code> get_num_gpus ()</code></pre>
+</blockquote>
+<p>Return number of gpus.</p>
+<hr>
+<p><a href="https://github.com/Iamalos/dlnb/blob/main/dlnb/core.py#L63" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="gpu" class="level3">
+<h3 class="anchored" data-anchor-id="gpu">gpu</h3>
+<blockquote class="blockquote">
+<pre><code> gpu (i:int=0)</code></pre>
+</blockquote>
+<hr>
+<p><a href="https://github.com/Iamalos/dlnb/blob/main/dlnb/core.py#L59" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="cpu" class="level3">
+<h3 class="anchored" data-anchor-id="cpu">cpu</h3>
+<blockquote class="blockquote">
+<pre><code> cpu ()</code></pre>
+</blockquote>
+</section>
+</section>
+<section id="plotting" class="level2">
+<h2 class="anchored" data-anchor-id="plotting">Plotting</h2>
+<hr>
+<p><a href="https://github.com/Iamalos/dlnb/blob/main/dlnb/core.py#L84" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="progressboard" class="level3">
+<h3 class="anchored" data-anchor-id="progressboard">ProgressBoard</h3>
+<blockquote class="blockquote">
+<pre><code> ProgressBoard (xlabel:Optional[str]=None, ylabel:Optional[str]=None,
+                xlim:Optional[float]=None, ylim:Optional[float]=None,
+                xscale:str='linear', yscale:str='linear', ls=['-', '--',
+                '-.', ':'], colors=['C0', 'C1', 'C2', 'C3'],
+                fig:Optional[plt.Figure]=None,
+                axes:Optional[plt.Axes]=None,
+                figsize:Tuple[float,float]=(3.5, 2.5), display:bool=True)</code></pre>
+</blockquote>
+<p>Plots data in animation.</p>
+<table class="table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>xlabel</td>
+<td>Optional[str]</td>
+<td>None</td>
+<td>label for <code>x</code> axis</td>
+</tr>
+<tr class="even">
+<td>ylabel</td>
+<td>Optional[str]</td>
+<td>None</td>
+<td>label for <code>y</code> axis</td>
+</tr>
+<tr class="odd">
+<td>xlim</td>
+<td>Optional[float]</td>
+<td>None</td>
+<td><code>x</code> limit values</td>
+</tr>
+<tr class="even">
+<td>ylim</td>
+<td>Optional[float]</td>
+<td>None</td>
+<td><code>y</code> limit values</td>
+</tr>
+<tr class="odd">
+<td>xscale</td>
+<td>str</td>
+<td>linear</td>
+<td>x scale, defaults to ’linear</td>
+</tr>
+<tr class="even">
+<td>yscale</td>
+<td>str</td>
+<td>linear</td>
+<td>y scale, defaults to ’linear</td>
+</tr>
+<tr class="odd">
+<td>ls</td>
+<td>list</td>
+<td>[‘-’, ‘–’, ‘-.’, ‘:’]</td>
+<td>list of linestyles to be used</td>
+</tr>
+<tr class="even">
+<td>colors</td>
+<td>list</td>
+<td>[‘C0’, ‘C1’, ‘C2’, ‘C3’]</td>
+<td>list of colors to be used</td>
+</tr>
+<tr class="odd">
+<td>fig</td>
+<td>Optional[plt.Figure]</td>
+<td>None</td>
+<td>figure</td>
+</tr>
+<tr class="even">
+<td>axes</td>
+<td>Optional[plt.Axes]</td>
+<td>None</td>
+<td>axes to be used for plotting. If this is not provided, creates new axes</td>
+</tr>
+<tr class="odd">
+<td>figsize</td>
+<td>Tuple[float, float]</td>
+<td>(3.5, 2.5)</td>
+<td>size of the figure to be displayed</td>
+</tr>
+<tr class="even">
+<td>display</td>
+<td>bool</td>
+<td>True</td>
+<td>whether to show the plot</td>
+</tr>
+</tbody>
+</table>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> ProgressBoard(xlabel <span class="op">=</span> <span class="st">'x values'</span>, ylabel <span class="op">=</span> <span class="st">'y values'</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> <span class="kw">lambda</span> x: x<span class="op">**</span><span class="dv">2</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> x <span class="kw">in</span> <span class="bu">range</span>(<span class="op">-</span><span class="dv">10</span>, <span class="dv">10</span>):</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    a.draw(x, y(x), <span class="st">'$x^2$'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="00_core_files/figure-html/cell-18-output-1.svg" class="img-fluid"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="building-modules" class="level2">
+<h2 class="anchored" data-anchor-id="building-modules">Building Modules</h2>
+<hr>
+<p><a href="https://github.com/Iamalos/dlnb/blob/main/dlnb/core.py#L192" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="module" class="level3">
+<h3 class="anchored" data-anchor-id="module">Module</h3>
+<blockquote class="blockquote">
+<pre><code> Module (plot_train_per_epoch:int=2, plot_valid_per_epoch:int=1)</code></pre>
+</blockquote>
+<p>The base class for all the models in the Diving into DL course</p>
+<table class="table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>plot_train_per_epoch</td>
+<td>int</td>
+<td>2</td>
+<td>number of training plot updates per one epoch</td>
+</tr>
+<tr class="even">
+<td>plot_valid_per_epoch</td>
+<td>int</td>
+<td>1</td>
+<td>number of validation plot updates per one epoch</td>
+</tr>
+</tbody>
+</table>
+<p>Basis building block for custom models in the course that includes the basic pipeline of training a neural net: <code>training step</code> function</p>
+<hr>
+<p><a href="https://github.com/Iamalos/dlnb/blob/main/dlnb/core.py#L288" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="datamodule" class="level3">
+<h3 class="anchored" data-anchor-id="datamodule">DataModule</h3>
+<blockquote class="blockquote">
+<pre><code> DataModule (root:str='../data', num_workers:int=4)</code></pre>
+</blockquote>
+<p>The base class for the data.</p>
+<p>The base class for the data. A data loader is a generator that yields a batch of data every time it is called. The batch is then fed into the <code>training_step</code> method of <a href="https://Iamalos.github.io/dlnb/core.html#module"><code>Module</code></a> to compute loss.</p>
+<hr>
+<p><a href="https://github.com/Iamalos/dlnb/blob/main/dlnb/core.py#L326" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="trainer" class="level3">
+<h3 class="anchored" data-anchor-id="trainer">Trainer</h3>
+<blockquote class="blockquote">
+<pre><code> Trainer (max_epochs:int, num_gpus:int=0, gradient_clip_value=0)</code></pre>
+</blockquote>
+<p>Base class used to train learnable parameters.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>max_epochs</td>
+<td>int</td>
+<td></td>
+<td>number of epochs to run train.</td>
+</tr>
+<tr class="even">
+<td>num_gpus</td>
+<td>int</td>
+<td>0</td>
+<td>number of gpus to use when on gpu</td>
+</tr>
+<tr class="odd">
+<td>gradient_clip_value</td>
+<td>int</td>
+<td>0</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="timer" class="level2">
+<h2 class="anchored" data-anchor-id="timer">Timer</h2>
+<hr>
+<p><a href="https://github.com/Iamalos/dlnb/blob/main/dlnb/core.py#L407" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="timer-1" class="level3">
+<h3 class="anchored" data-anchor-id="timer-1">Timer</h3>
+<blockquote class="blockquote">
+<pre><code> Timer ()</code></pre>
+</blockquote>
+<p>Record multiple running times.</p>
+<p><a href="https://Iamalos.github.io/dlnb/core.html#timer.start"><code>Timer.start</code></a> to start the timer and <a href="https://Iamalos.github.io/dlnb/core.html#timer.stop"><code>Timer.stop</code></a> to end it. <a href="https://Iamalos.github.io/dlnb/core.html#timer.avg"><code>Timer.avg</code></a> calculates the average running time</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>timer <span class="op">=</span> Timer()</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>timer.start()</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>time.sleep(<span class="fl">0.5</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>timer.stop()</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>timer.start()</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>time.sleep(<span class="dv">1</span>)</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>timer.stop()</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>test_close(timer.avg(), (<span class="fl">0.5</span><span class="op">+</span><span class="dv">1</span>)<span class="op">/</span><span class="dv">2</span>, eps<span class="op">=</span><span class="fl">1e-2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/Iamalos/dlnb/blob/main/dlnb/core.py#L439" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="accumulator" class="level3">
+<h3 class="anchored" data-anchor-id="accumulator">Accumulator</h3>
+<blockquote class="blockquote">
+<pre><code> Accumulator (n:int)</code></pre>
+</blockquote>
+<p>Accumulates sums over <code>n</code> variables.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>n</td>
+<td>int</td>
+<td>length of an array</td>
+</tr>
+</tbody>
+</table>
+<p>Accumulates statistics over an array of lengths <code>n</code>. Each entry in an array represents <code>characteristic</code> over which new items to repsective array positions will be summed over.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> Accumulator(<span class="dv">3</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>a.add(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>test_eq(a.data, [<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">3.0</span>])</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>a.add(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>)</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>test_eq(a.data, [<span class="fl">2.0</span>, <span class="fl">3.0</span>, <span class="fl">4.0</span>])</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>a.reset()</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>test_eq(a.data, [<span class="fl">0.0</span>, <span class="fl">0.0</span>, <span class="fl">0.0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
