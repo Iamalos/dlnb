@@ -315,6 +315,13 @@ class DataModule(HyperParameters):
     def val_dataloader(self):
         return self.get_dataloader(train=False)
 
+# %% ../nbs/00_core.ipynb 31
+add_docs(DataModule,
+         get_tensorloader = " Create torch DataLoader from the tensors.",
+         train_dataloader = "Return the train dataloader",
+         val_dataloader = "Return the validation dataloader",
+         get_dataloader = "not implemented")
+
 # %% ../nbs/00_core.ipynb 32
 class Trainer(HyperParameters):
     "Base class used to train learnable parameters."
@@ -387,6 +394,15 @@ class Trainer(HyperParameters):
                 self.model.validation_step(self.prepare_batch(batch))
             self.val_batch_idx += 1
 
+# %% ../nbs/00_core.ipynb 33
+add_docs(Trainer,
+         prepare_data = "Prepare train and validation dataloaders",
+         prepare_model = "Set trainer and model",
+         fit = "Fit the model on data",
+         prepare_batch = "Prepares the batch before training loop",
+         fit_epoch = "Fit each training and (optonally) validation epoch"
+         )
+
 # %% ../nbs/00_core.ipynb 35
 class Timer:
     "Record multiple running times."
@@ -410,6 +426,14 @@ class Timer:
         # casts list to numpy array to use `cumsum` f-n
         # then casts back to python list
         return np.array(self.times).cumsum().tolist()
+
+# %% ../nbs/00_core.ipynb 36
+add_docs(Timer,
+         start = "Start the timer",
+         stop = "Stop the timer and record the time in a list",
+         avg = "Return the average time",
+         cumsum = "Return the accumulated time"
+        )
 
 # %% ../nbs/00_core.ipynb 39
 class Accumulator:
