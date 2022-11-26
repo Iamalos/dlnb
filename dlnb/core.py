@@ -411,14 +411,6 @@ class Timer:
         # then casts back to python list
         return np.array(self.times).cumsum().tolist()
 
-# %% ../nbs/00_core.ipynb 36
-add_docs(Timer,
-         start = "Start the timer",
-         stop = "Stop the timer and record the time in a list",
-         avg = "Return the average time",
-         cumsum = "Return the accumulated time"
-        )
-
 # %% ../nbs/00_core.ipynb 39
 class Accumulator:
     "Accumulates sums over `n` variables."
